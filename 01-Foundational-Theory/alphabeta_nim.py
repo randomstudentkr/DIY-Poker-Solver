@@ -1,13 +1,5 @@
 from functools import cache
 
-"""
-The following are the functions for the common rules for Nim:
-    (1) There are several piles, and
-    (2) A player can take as many counters as he wants, but in the same pile.
-To implement the minimax algorithm under these rules, we only have to edit the first two functions, 
-and use the same `minimax` and `best_move` function.
-"""
-
 def possible_new_states(state):
     for pile, counters in enumerate(state):
         for remain in range(counters):
@@ -18,7 +10,7 @@ def evaluate(state, is_maximizing):
         return 1 if is_maximizing else -1
 
 @cache
-def minimax(state, is_maximizing):
+def minimax(state, is_maximizing, alpha=-1, beta=1):
     """Calculate the minimax score
 
     This function takes the current state and whose turn it is and calculates the minimax score.
@@ -38,9 +30,17 @@ def minimax(state, is_maximizing):
     if (score := evaluate(state, is_maximizing)) is not None:
         return score
     
-    scores = [
-        minimax(new_state, is_maximizing=not is_maximizing) for new_state in possible_new_states(state)
-    ]
+    scores = []
+    for new_state in possible_new_states(state):
+        scores.append(
+            score:= minimax(new_state, is_maximizing=not is_maximizing)
+        )
+        if is_maximizing:
+            alpha = max(alpha, score)
+        else:
+            beta = min(beta, score)
+        if beta <= alpha:
+            break
     return (max if is_maximizing else min)(scores)
 
 def best_move(state):
